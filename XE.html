@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="XE创新科技 - 专业的游戏修改工具开发商">
+    <meta name="keywords" content="游戏修改,CheatEngine,内存修改,XECheeseClient">
+    <title>XE创新科技 - 游戏修改专家</title>
+    <style>
+        :root {
+            --primary: #2a2a72;
+            --secondary: #009ffd;
+            --accent: #00ffaa;
+            --dark: #0a0a15;
+            --neon: #00f7ff;
+            --matrix: #00ff41;
+            --error: #ff3860;
+            --purple: #9d00ff;
+            --pink: #ff00ff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', 'Microsoft YaHei', sans-serif;
+            background: var(--dark);
+            color: #fff;
+            overflow-x: hidden;
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+        
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s, visibility 0.5s;
+        }
+        
+        .loader.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .loader-content {
+            text-align: center;
+            position: relative;
+        }
+        
+        .loader-circle {
+            width: 80px;
+            height: 80px;
+            border: 5px solid rgba(0, 247, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--neon);
+            border-bottom-color: var(--pink);
+            animation: spin 1.5s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .loader-circle::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 5px solid rgba(157, 0, 255, 0.2);
+            border-radius: 50%;
+            border-left-color: var(--purple);
+            border-right-color: var(--accent);
+            animation: spinReverse 2s ease-in-out infinite;
+        }
+        
+        .loader-text {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: var(--neon);
+            text-shadow: 0 0 10px var(--neon);
+            animation: pulse 2s infinite;
+        }
+        
+        .language-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(0,159,253,0.3);
+            border: 1px solid var(--neon);
+            color: white;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 100;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0,247,255,0.3);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .language-toggle:hover {
+            background: rgba(0,159,253,0.5);
+            box-shadow: 0 0 25px var(--neon);
+            transform: translateY(-2px);
+        }
+        
+        .navbar {
+            position: fixed;
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, rgba(16,16,32,0.95) 0%, rgba(42,42,114,0.85) 100%);
+            backdrop-filter: blur(10px);
+            z-index: 99;
+            transition: all 0.3s;
+            border-bottom: 1px solid rgba(0,247,255,0.2);
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+        }
+        
+        .navbar.scrolled {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, rgba(10,10,20,0.98) 0%, rgba(42,42,114,0.9) 100%);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+        
+        .nav-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            position: relative;
+            padding: 5px 0;
+            text-transform: uppercase;
+            font-size: 1.1rem;
+        }
+        
+        .nav-links a:hover {
+            color: var(--neon);
+            text-shadow: 0 0 10px var(--neon);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--neon);
+            box-shadow: 0 0 10px var(--neon);
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .bg-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .particles-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, rgba(42,42,114,0.3) 0%, rgba(10,10,20,0.9) 70%);
+        }
+        
+        .grid-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 247, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 247, 255, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            animation: drift 30s infinite linear;
+        }
+        
+        .glow {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.3;
+        }
+        
+        .glow-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--purple);
+            top: -100px;
+            left: -100px;
+            animation: float 15s infinite alternate, pulse 8s infinite alternate;
+        }
+        
+        .glow-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--neon);
+            bottom: -150px;
+            right: -100px;
+            animation: float 20s infinite alternate-reverse, pulse 10s infinite alternate;
+        }
+        
+        .glow-3 {
+            width: 200px;
+            height: 200px;
+            background: var(--pink);
+            top: 50%;
+            left: 30%;
+            animation: float 12s infinite alternate, pulse 6s infinite alternate;
+        }
+        
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: float 15s infinite linear;
+            filter: blur(1px);
+            opacity: 0;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            max-width: 900px;
+            padding: 0 20px;
+        }
+        
+        .hero h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: gradient 8s ease infinite;
+            background-size: 300% 300%;
+            text-shadow: 0 0 20px rgba(0,159,253,0.3);
+            position: relative;
+            display: inline-block;
+        }
+        
+        .hero h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon), var(--pink), transparent);
+            box-shadow: 0 0 20px var(--neon);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease;
+        }
+        
+        .hero h1:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .hero p {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            margin-bottom: 40px;
+            text-shadow: 0 0 10px rgba(0,159,253,0.3);
+            position: relative;
+        }
+        
+        .hero p::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon), transparent);
+            box-shadow: 0 0 15px var(--neon);
+        }
+        
+        .cta-button {
+            padding: 15px 40px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+            box-shadow: 0 5px 25px rgba(0,159,253,0.4);
+            border: 1px solid rgba(0,247,255,0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,159,253,0.6);
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+        }
+        
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .cta-button:hover::before {
+            left: 100%;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            text-align: center;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--neon), transparent);
+            box-shadow: 0 0 15px var(--neon);
+        }
+        
+        .about-section {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #1a1a2f, #0f0f1f);
+            position: relative;
+        }
+        
+        .about-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(0,247,255,0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .about-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            padding: 50px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
+            transition: transform 0.5s, box-shadow 0.5s;
+        }
+        
+        .about-container:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0, 159, 253, 0.4);
+        }
+        
+        .history-timeline {
+            position: relative;
+            margin-top: 50px;
+            padding-left: 30px;
+        }
+        
+        .history-timeline::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10px;
+            height: 100%;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--secondary), var(--accent));
+            box-shadow: 0 0 10px var(--neon);
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding-left: 30px;
+            transition: transform 0.3s;
+        }
+        
+        .timeline-item:hover {
+            transform: translateX(10px);
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            top: 5px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--secondary);
+            box-shadow: 0 0 10px var(--neon);
+            z-index: 1;
+            transition: all 0.3s;
+        }
+        
+        .timeline-item:hover::before {
+            background: var(--accent);
+            transform: scale(1.2);
+        }
+        
+        .timeline-year {
+            font-size: 1.3rem;
+            color: var(--neon);
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .timeline-content {
+            background: rgba(0,159,253,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 3px solid var(--neon);
+            transition: all 0.3s;
+        }
+        
+        .timeline-item:hover .timeline-content {
+            background: rgba(0,159,253,0.2);
+            box-shadow: 0 5px 15px rgba(0, 159, 253, 0.2);
+        }
+        
+        .product-showcase {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #1a1a2f, #0a0a15);
+            text-align: center;
+        }
+        
+        .product-card {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            padding: 40px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0,247,255,0.3);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transition: all 0.5s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .product-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                rgba(0, 247, 255, 0) 0%,
+                rgba(0, 247, 255, 0) 30%,
+                rgba(0, 247, 255, 0.1) 45%,
+                rgba(0, 247, 255, 0) 60%,
+                rgba(0, 247, 255, 0) 100%
+            );
+            transform: rotate(30deg);
+            animation: shine 3s infinite;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,159,253,0.4);
+            border: 1px solid var(--neon);
+        }
+        
+        .feature-list {
+            text-align: left;
+            margin: 30px 0;
+            padding-left: 20px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 15px;
+            position: relative;
+            padding-left: 30px;
+            transition: all 0.3s;
+        }
+        
+        .feature-list li:hover {
+            transform: translateX(10px);
+            color: var(--neon);
+        }
+        
+        .feature-list li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: var(--neon);
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .feature-list li:hover::before {
+            color: var(--accent);
+            transform: scale(1.5);
+        }
+        
+        .version-selector {
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .version-selector select {
+            padding: 12px 25px;
+            background: rgba(0,159,253,0.2);
+            border: 1px solid var(--neon);
+            color: white;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-family: 'Orbitron', sans-serif;
+            cursor: pointer;
+            outline: none;
+            width: 100%;
+            max-width: 400px;
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 20px center;
+            background-size: 15px;
+            transition: all 0.3s;
+        }
+        
+        .version-selector select:hover {
+            box-shadow: 0 0 15px var(--neon);
+            border-color: var(--accent);
+        }
+        
+        .version-selector select option {
+            background: var(--dark);
+            color: white;
+            padding: 10px;
+        }
+        
+        .founder-section {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #1a1a2f, #0f0f1f);
+            position: relative;
+        }
+        
+        .founder-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(0,247,255,0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .founder-card {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.05);
+            padding: 50px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transition: all 0.5s;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .founder-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 30px 60px rgba(0,159,253,0.4);
+            border: 1px solid rgba(0,247,255,0.5);
+        }
+        
+        .founder-photo {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--secondary);
+            box-shadow: 0 0 30px rgba(0,159,253,0.5);
+            transition: all 0.5s;
+        }
+        
+        .founder-photo:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 50px rgba(0,247,255,0.7);
+            border: 3px solid var(--neon);
+        }
+        
+        .contact-section {
+            padding: 100px 20px;
+            background: linear-gradient(135deg, #1a1a2f, #0a0a15);
+            text-align: center;
+            position: relative;
+        }
+        
+        .contact-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(0,247,255,0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100 M0,50 L100,50 M50,0 L50,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .contact-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1000px;
+            margin: 50px auto 0;
+        }
+        
+        .contact-card {
+            background: rgba(255,255,255,0.05);
+            padding: 40px;
+            border-radius: 15px;
+            transition: all 0.5s;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .contact-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 247, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .contact-card:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .contact-card:hover {
+            transform: translateY(-10px) rotateX(5deg);
+            box-shadow: 0 20px 40px rgba(0,159,253,0.3);
+            border: 1px solid var(--neon);
+        }
+        
+        .contact-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--neon);
+            text-shadow: 0 0 15px var(--neon);
+            transition: all 0.3s;
+        }
+        
+        .contact-card:hover .contact-icon {
+            transform: scale(1.2);
+            color: var(--accent);
+        }
+        
+        .qq-group-link {
+            display: inline-block;
+            margin-top: 15px;
+            color: var(--neon);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--neon);
+            transition: all 0.3s;
+        }
+        
+        .qq-group-link:hover {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            text-shadow: 0 0 10px var(--neon);
+        }
+        
+        footer {
+            padding: 50px;
+            text-align: center;
+            background: linear-gradient(to right, #0a0a15, #1a1a2f, #0a0a15);
+            border-top: 1px solid rgba(0,247,255,0.2);
+            position: relative;
+        }
+        
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path fill="none" stroke="rgba(0,247,255,0.05)" stroke-width="0.5" d="M0,0 L100,100 M100,0 L0,100" /></svg>');
+            background-size: 50px 50px;
+            opacity: 0.3;
+            z-index: 0;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 30px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .social-links a {
+            color: white;
+            font-size: 1.8rem;
+            transition: all 0.3s;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0,247,255,0.2);
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .social-links a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 247, 255, 0.3), transparent);
+            transform: translateX(-100%);
+        }
+        
+        .social-links a:hover::before {
+            animation: shine 0.6s;
+        }
+        
+        .social-links a:hover {
+            color: var(--neon);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,247,255,0.4);
+            background: rgba(0,247,255,0.1);
+            border: 1px solid var(--neon);
+            text-shadow: 0 0 20px var(--neon);
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: rgba(0,159,253,0.3);
+            border: 1px solid var(--neon);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 98;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px rgba(0,247,255,0.3);
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .back-to-top:hover {
+            background: rgba(0,159,253,0.5);
+            box-shadow: 0 0 25px var(--neon);
+            transform: translateY(-3px);
+        }
+        
+        .back-to-top i {
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .notification {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,159,253,0.9);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 50px;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0,159,253,0.5);
+            animation: fadeIn 0.3s, fadeOut 0.3s 2s forwards;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .notification.error {
+            background: rgba(255, 56, 96, 0.9);
+            box-shadow: 0 5px 20px rgba(255, 56, 96, 0.5);
+        }
+        
+        .notification i {
+            font-size: 1.2rem;
+        }
+        
+        .moving-row-container {
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            height: 200px;
+            background: rgba(0,0,0,0.3);
+            margin: 50px 0;
+        }
+        
+        .moving-row {
+            display: flex;
+            position: absolute;
+            width: 300vw;
+            animation: moveRight 25s linear infinite;
+            height: 100%;
+            align-items: center;
+        }
+        
+        .moving-image {
+            width: 150px;
+            height: 150px;
+            margin: 0 30px;
+            filter: drop-shadow(0 0 15px rgba(0,247,255,0.7));
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .moving-image:hover {
+            transform: scale(1.2) rotate(15deg);
+            filter: drop-shadow(0 0 25px #ff00ff);
+        }
+        
+        .cursor {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(0, 247, 255, 0.7);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+            filter: blur(1px);
+        }
+        
+        @keyframes moveRight {
+            0% { transform: translateX(-1000px); }
+            100% { transform: translateX(100px); }
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.5; }
+            100% { transform: scale(1); opacity: 0.3; }
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @keyframes spinReverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translate(-50%, 0); }
+            to { opacity: 0; transform: translate(-50%, 20px); }
+        }
+        
+        @keyframes shine {
+            to {
+                transform: translateX(100%);
+            }
+        }
+        
+        @keyframes drift {
+            0% { transform: translateX(0) translateY(0); }
+            50% { transform: translateX(50px) translateY(50px); }
+            100% { transform: translateX(0) translateY(0); }
+        }
+        
+        .pulse-effect {
+            animation: pulse 1s;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 15px;
+            }
+            
+            .nav-links a {
+                font-size: 0.9rem;
+            }
+            
+            .founder-card, .product-card, .about-container {
+                padding: 30px;
+            }
+            
+            .contact-methods {
+                grid-template-columns: 1fr;
+            }
+            
+            .social-links a {
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .back-to-top {
+                width: 40px;
+                height: 40px;
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .back-to-top i {
+                font-size: 1.2rem;
+            }
+            
+            .moving-image {
+                width: 100px;
+                height: 100px;
+                margin: 0 15px;
+            }
+            
+            .glow {
+                display: none;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="loader" id="loader">
+        <div class="loader-content">
+            <div class="loader-circle"></div>
+            <div class="loader-text" data-en="LOADING..." data-cn="加载中...">加载中...</div>
+        </div>
+    </div>
+
+    <div class="bg-effects">
+        <div class="particles-bg" id="particlesBg"></div>
+        <div class="grid-bg"></div>
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+        <div class="glow glow-3"></div>
+    </div>
+    
+    <div class="back-to-top" id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <button class="language-toggle" id="languageToggle">English</button>
+
+    <nav class="navbar">
+        <div class="nav-links">
+            <a href="#about" data-en="About" data-cn="关于">关于</a>
+            <a href="#product" data-en="Product" data-cn="产品">产品</a>
+            <a href="#founder" data-en="Founder" data-cn="创始人">创始人</a>
+            <a href="#contact" data-en="Contact" data-cn="联系">联系</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1 data-en="XE TECH INNOVATION" data-cn="XE创新科技">XE创新科技</h1>
+            <p data-en="Redefining Game Modification Technology" data-cn="重新定义游戏修改技术">重新定义游戏修改技术</p>
+            <button class="cta-button" onclick="location.href='#contact'" data-en="Join Community" data-cn="加入社区">加入社区</button>
+        </div>
+    </section>
+
+    <div class="moving-row-container">
+        <div class="moving-row">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/d54d3219c494a01a5a6497a4011382e6.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/8b7c11f294f33649af3ec4aaf44a070e.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/7da4638a20eec16c73eb3043962f6ee8.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/6ad893d2cf58da8bb69aa9aaae07a029.md.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/a10503ea1acf01ab2247a1af7a8ec8ea.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/d54d3219c494a01a5a6497a4011382e6.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/8b7c11f294f33649af3ec4aaf44a070e.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/7da4638a20eec16c73eb3043962f6ee8.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/11e37406020c4b69d68e4510d54d8672.png">
+            <img class="moving-image" src="https://t2.wodetu.cn/2025/05/02/a10503ea1acf01ab2247a1af7a8ec8ea.png">
+        </div>
+    </div>
+
+    <section class="about-section" id="about">
+        <div class="about-container">
+            <h2 class="section-title" data-en="About XE Innovation" data-cn="关于XE创新科技">关于XE创新科技</h2>
+            <p data-en="We are pioneers in game modification technology, creators of the renowned XECheeseClient CheatEngine. Founded in 2022 in Liaoning, we specialize in developing cutting-edge game enhancement tools with our proprietary memory hacking technology." data-cn="我们是游戏修改技术的先驱，知名产品XECheeseClient游戏修改器的创造者。2022年成立于辽宁，我们专注于利用专有的内存黑客技术开发尖端游戏增强工具。">
+                我们是游戏修改技术的先驱，知名产品XECheeseClient游戏修改器的创造者。2022年成立于辽宁，我们专注于利用专有的内存黑客技术开发尖端游戏增强工具。
+            </p>
+            
+            <div class="history-timeline" id="history">
+                <h3 class="section-title" style="margin-bottom: 30px; font-size: 2rem;" data-en="Our Journey" data-cn="发展历程">发展历程</h3>
+                
+                <div class="timeline-item">
+                    <div class="timeline-year">2022.03</div>
+                    <div class="timeline-content" data-en="Sun Yang founded XE Innovation in Liaoning, focusing on game modification tools development" data-cn="Sun羊在辽宁创立XE创新科技，专注于游戏修改工具开发">
+                        Sun羊在辽宁创立XE创新科技，专注于游戏修改工具开发
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-year">2022.09</div>
+                    <div class="timeline-content" data-en="Released XECheeseClient v1.0, the flagship CheatEngine product with 10,000+ downloads in first month" data-cn="发布旗舰产品XECheeseClient v1.0游戏修改器，首月下载量突破1万">
+                        发布旗舰产品XECheeseClient v1.0游戏修改器，首月下载量突破1万
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-year">2023.03</div>
+                    <div class="timeline-content" data-en="Developed X-MEM technology for advanced game memory scanning and modification" data-cn="开发X-MEM技术，实现高级游戏内存扫描与修改">
+                        开发X-MEM技术，实现高级游戏内存扫描与修改
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-year">2023.09</div>
+                    <div class="timeline-content" data-en="Expanded to Shanghai with team growth to 50 members and 100,000+ user community" data-cn="团队扩展至50人，上海办公室成立，用户社区突破10万人">
+                        团队扩展至50人，上海办公室成立，用户社区突破10万人
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-year">2023.12</div>
+                    <div class="timeline-content" data-en="Won Global Tech Innovation Award for XECheeseClient's revolutionary approach" data-cn="XECheeseClient凭借革命性技术获得全球科技创新金奖">
+                        XECheeseClient凭借革命性技术获得全球科技创新金奖
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="product-showcase" id="product">
+        <div class="product-card">
+            <h2 class="section-title" data-en="XECheeseClient" data-cn="XECheeseClient">XECheeseClient</h2>
+            <p data-en="Our flagship game modification tool with advanced memory hacking capabilities" data-cn="我们的旗舰游戏修改工具，具备先进的内存黑客功能">
+                我们的旗舰游戏修改工具，具备先进的内存黑客功能
+            </p>
+            
+            <div class="feature-list">
+                <h3 data-en="Key Features" data-cn="核心功能">核心功能</h3>
+                <ul>
+                    <li data-en="Advanced memory scanning and modification" data-cn="高级内存扫描与修改">高级内存扫描与修改</li>
+                    <li data-en="Real-time game value monitoring" data-cn="实时游戏数值监控">实时游戏数值监控</li>
+                    <li data-en="Multi-process game hacking support" data-cn="多进程游戏修改支持">多进程游戏修改支持</li>
+                    <li data-en="Custom script engine for automation" data-cn="自动化自定义脚本引擎">自动化自定义脚本引擎</li>
+                    <li data-en="Anti-detection technology" data-cn="反检测技术">反检测技术</li>
+                    <li data-en="User-friendly interface" data-cn="用户友好界面">用户友好界面</li>
+                </ul>
+            </div>
+            
+            <div class="version-selector">
+                <select id="versionSelect">
+                    <option value="" disabled selected data-en="Select Version" data-cn="选择版本">选择版本</option>
+                    <option value="v1.0">XECheeseClient v1.0</option>
+                    <option value="v1.1">XECheeseClient v1.1</option>
+                    <option value="v1.2">XECheeseClient v1.2</option>
+                    <option value="v1.3">XECheeseClient v1.3</option>
+                    <option value="v1.4">XECheeseClient v1.4</option>
+                    <option value="v1.5">XECheeseClient v1.5</option>
+                    <option value="v1.6">XECheeseClient v1.6</option>
+                    <option value="v1.7">XECheeseClient v1.7</option>
+                    <option value="v1.8">XECheeseClient v1.8</option>
+                    <option value="v1.9">XECheeseClient v1.9</option>
+                    <option value="v2.0">XECheeseClient v2.0</option>
+                    <option value="v2.1">XECheeseClient v2.1</option>
+                    <option value="v2.2">XECheeseClient v2.2</option>
+                    <option value="v2.3">XECheeseClient v2.3</option>
+                    <option value="v2.4">XECheeseClient v2.4</option>
+                    <option value="v2.5">XECheeseClient v2.5</option>
+                    <option value="v2.6">XECheeseClient v2.6</option>
+                    <option value="v2.7">XECheeseClient v2.7</option>
+                    <option value="v2.8">XECheeseClient v2.8</option>
+                    <option value="v2.9">XECheeseClient v2.9</option>
+                    <option value="v3.0">XECheeseClient v3.0</option>
+                    <option value="v3.1">XECheeseClient v3.1</option>
+                    <option value="v3.2">XECheeseClient v3.2</option>
+                    <option value="v3.3">XECheeseClient v3.3</option>
+                    <option value="v3.4">XECheeseClient v3.4</option>
+                    <option value="v3.5">XECheeseClient v3.5</option>
+                </select>
+            </div>
+            
+            <button class="cta-button" style="margin-top: 20px;" onclick="downloadVersion()" data-en="Download Now" data-cn="立即下载">立即下载</button>
+        </div>
+    </section>
+
+    <section class="founder-section" id="founder">
+        <div class="founder-card">
+            <h2 class="section-title" data-en="Founder - Sun Yang" data-cn="创始人 - Sun羊">创始人 - Sun羊</h2>
+            <p data-en="Game modification expert with 10+ years experience in memory hacking. Founded XE Innovation in 2022 in Liaoning. Creator of XECheeseClient and pioneer in game modification technologies." data-cn="游戏修改专家，拥有10年以上内存黑客经验。2022年在辽宁创立XE创新科技。XECheeseClient的创造者，游戏修改技术先驱。">
+                游戏修改专家，拥有10年以上内存黑客经验。2022年在辽宁创立XE创新科技。XECheeseClient的创造者，游戏修改技术先驱。
+            </p>
+            <div style="display: flex; gap: 40px; margin-top: 50px; align-items: center; flex-wrap: wrap; justify-content: center;">
+                <img src="https://t2.wodetu.cn/2025/04/30/87636dbe0de83d9a9f9aab553223f591.png" alt="Sun Yang" class="founder-photo">
+                <div>
+                    <h3 data-en="Tech Philosophy" data-cn="技术理念">技术理念</h3>
+                    <p data-en='"Pushing the boundaries of what's possible in game modification through innovative memory hacking techniques"' data-cn='"通过创新的内存黑客技术突破游戏修改的极限"'>"通过创新的内存黑客技术突破游戏修改的极限"</p>
+                    <div class="social-links" style="justify-content: flex-start; margin-top: 20px;">
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-github"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-section" id="contact">
+        <h2 class="section-title" data-en="Contact Us" data-cn="联系我们">联系我们</h2>
+        <p data-en="Join our growing community of game enthusiasts" data-cn="加入我们不断壮大的游戏爱好者社区">加入我们不断壮大的游戏爱好者社区</p>
+        <div class="contact-methods">
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fab fa-qq"></i>
+                </div>
+                <h3>QQ</h3>
+                <p>3696124122</p>
+                <button class="cta-button" style="margin-top: 15px; padding: 10px 20px; font-size: 1rem;" onclick="copyToClipboard('3696124122')" data-en="Copy" data-cn="复制">复制</button>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fab fa-qq"></i>
+                </div>
+                <h3>QQ交流群</h3>
+                <p>1017952418</p>
+                <a href="https://qm.qq.com/q/Mgqe0lSSu6" class="qq-group-link" target="_blank" data-en="Join Group" data-cn="加入群聊">加入群聊</a>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3 data-en="Email" data-cn="邮箱">邮箱</h3>
+                <p>3696124122@qq.com</p>
+                <button class="cta-button" style="margin-top: 20px; padding: 10px 20px; font-size: 1rem;" onclick="copyToClipboard('3696124122@qq.com')" data-en="Copy" data-cn="复制">复制</button>
+            </div>
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-phone-alt"></i>
+                </div>
+                <h3 data-en="Phone" data-cn="电话">电话</h3>
+                <p>+86 186-0315-0009</p>
+                <button class="cta-button" style="margin-top: 20px; padding: 10px 20px; font-size: 1rem;" onclick="callPhone('+8618603150009')" data-en="Call" data-cn="拨打">拨打</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p data-en="© 2023 XE Tech Innovation | Specialists in Game Modification Technology" data-cn="© 2023 XE创新科技 | 游戏修改技术专家">© 2023 XE创新科技 | 游戏修改技术专家</p>
+        <div class="social-links">
+            <a href="https://wx.qq.com/" target="_blank" id="weixinBtn"><i class="fab fa-weixin"></i></a>
+            <a href="https://weibo.com/" target="_blank" id="weiboBtn"><i class="fab fa-weibo"></i></a>
+            <a href="https://www.bilibili.com/" target="_blank" id="bilibiliBtn"><i class="fab fa-bilibili"></i></a>
+        </div>
+    </footer>
+
+    <script>
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                document.getElementById('loader').classList.add('hidden');
+            }, 1500);
+        });
+
+        function createParticles() {
+            const container = document.getElementById('particlesBg');
+            const particleCount = Math.floor(window.innerWidth / 10);
+            const colors = ['var(--neon)', 'var(--pink)', 'var(--accent)', 'var(--purple)'];
+            
+            for(let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                const size = Math.random() * 5 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.bottom = `-${size}px`;
+                
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 15 + 10;
+                particle.style.animationDelay = `${delay}s`;
+                particle.style.animationDuration = `${duration}s`;
+                
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.background = randomColor;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        const toggle = document.getElementById('languageToggle');
+        let currentLang = 'cn';
+        
+        toggle.addEventListener('click', () => {
+            currentLang = currentLang === 'cn' ? 'en' : 'cn';
+            toggle.textContent = currentLang === 'cn' ? 'English' : '中文';
+            
+            document.querySelectorAll('[data-en], [data-cn]').forEach(el => {
+                if(el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                    el.placeholder = currentLang === 'cn' ? el.getAttribute('data-cn') : el.getAttribute('data-en');
+                } else {
+                    el.textContent = currentLang === 'cn' ? el.getAttribute('data-cn') : el.getAttribute('data-en');
+                }
+            });
+        });
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification(currentLang === 'cn' ? `已复制: ${text}` : `Copied: ${text}`);
+            }).catch(err => {
+                showNotification(currentLang === 'cn' ? '复制失败' : 'Copy failed', true);
+                console.error('Failed to copy: ', err);
+            });
+        }
+
+        function callPhone(number) {
+            if(/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                window.location.href = `tel:${number}`;
+            } else {
+                showNotification(currentLang === 'cn' ? `请手动拨打: ${number}` : `Please dial: ${number}`);
+            }
+        }
+
+        function downloadVersion() {
+            const versionSelect = document.getElementById('versionSelect');
+            const selectedVersion = versionSelect.value;
+            
+            if (!selectedVersion) {
+                showNotification(currentLang === 'cn' ? '请选择版本' : 'Please select a version', true);
+                return;
+            }
+            
+            window.open('https://pan.baidu.com/s/1mAM6X9YiMIobv6roZB5Q3A', '_blank');
+            copyToClipboard('y336');
+            
+            setTimeout(() => {
+                showNotification(currentLang === 'cn' ? '已跳转百度网盘，提取码: y336（已自动复制）' : 'Redirecting to Baidu Netdisk, code: y336 (copied)');
+            }, 300);
+        }
+
+        function showNotification(message, isError = false) {
+            const notification = document.createElement('div');
+            notification.className = `notification ${isError ? 'error' : ''}`;
+            
+            const icon = document.createElement('i');
+            icon.className = isError ? 'fas fa-exclamation-circle' : 'fas fa-check-circle';
+            notification.appendChild(icon);
+            
+            const text = document.createElement('span');
+            text.textContent = message;
+            notification.appendChild(text);
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2300);
+        }
+
+        const backToTop = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if(window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            
+            if (window.scrollY > 300) {
+                backToTop.classList.add('visible');
+            } else {
+                backToTop.classList.remove('visible');
+            }
+        });
+        
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        const socialLinks = document.querySelectorAll('.social-links a');
+        
+        socialLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                link.classList.add('pulse-effect');
+                setTimeout(() => link.classList.remove('pulse-effect'), 1000);
+            });
+        });
+
+        document.querySelectorAll('.moving-image').forEach(img => {
+            img.addEventListener('click', function() {
+                this.style.animation = 'none';
+                setTimeout(() => {
+                    this.style.animation = '';
+                }, 10);
+            });
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            const cursor = document.createElement('div');
+            cursor.classList.add('cursor');
+            cursor.style.left = e.clientX + 'px';
+            cursor.style.top = e.clientY + 'px';
+            document.body.appendChild(cursor);
+            
+            setTimeout(() => {
+                cursor.style.opacity = '0';
+                setTimeout(() => {
+                    cursor.remove();
+                }, 300);
+            }, 50);
+        });
+
+        window.addEventListener('load', () => {
+            createParticles();
+            
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translate(-50%, 20px); }
+                    to { opacity: 1; transform: translate(-50%, 0); }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; transform: translate(-50%, 0); }
+                    to { opacity: 0; transform: translate(-50%, 20px); }
+                }
+            `;
+            document.head.appendChild(style);
+        });
+
+        window.addEventListener('resize', () => {
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => particle.remove());
+            createParticles();
+        });
+    </script>
+</body>
+</html>
